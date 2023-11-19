@@ -1,330 +1,122 @@
-// tsc && node dist/index.js
+// Chapter 5 Exercises
 
-// // // let i: 3 = 3;
-// // // i = 4;
+// (2) private vs protected constructor
+class Animal {
+  protected constructor(public name: string) {}
 
-// // // function f(n) {
-// // //   // Error TS7006: Parameter 'n' implicitly has an 'any' type. console.log(n)
-// // //   n;
-// // // }
+  // static build(name: string) {
+  //   return new Animal(name);
+  // }
+}
 
-// // // type x = { a: number } | { b: string };
+class Dog extends Animal{
+  public constructor(public name: string) {
+    super(name);
+  }
+}
 
-// // // const xx: x = { a: 12, b: '14' };
+const c = new Dog("john");
+// const c = Animal.build("john");
+console.log(c.name);
 
-// // type Filter = {
-// //   <T>(array: T[], f: (item: T) => boolean): T[];
-// // };
+// -> Some, if the constructor is private: (That class is not instantiateable from outside, The super class cannot be created)
+//          if it is protected:            (That class is not instantiateable from outside, The super class can be created, ⭐️ But the super class is not instantiateable from out side.)
 
-// // const f: Filter = (a, f) => {
-// //   const result = [];
-// //   for (const item of a) {
-// //     if (f(item)) {
-// //       result.push(item);
-// //     }
-// //   }
-// //   return result;
-// // };
+// (3) Shoes.
 
-// // f([1, 2, 3], (_) => _ > 2);
-// // f(["a", "b"], (_) => _ !== 12);
+type Shoe = { purpose: string };
+class BalletFlat implements Shoe {
+  purpose = "dancing";
+}
+class Boot implements Shoe {
+  purpose = "woodcutting";
+}
+class Sneaker implements Shoe {
+  purpose = "walking";
+}
 
-// // let names = [
-// //   { firstName: "beth" },
-// //   { firstName: "caitlyn" },
-// //   { firstName: "xin" },
-// // ];
+// ------------ bad -------------
 
-// // type myMap<T> = (array: T[], f: (item: T) => T) => T[];
+type CreateBalletFlatType = (type: "balletFlat") => BalletFlat;
+type CreateBootType = (type: "boot") => Boot;
+type CreateSneakerType = (type: "sneaker") => Sneaker;
+type merged = CreateBalletFlatType | CreateBootType | CreateSneakerType;
 
-// // const map: myMap<T> = (array, f) => {
-// //   let result = [];
-// //   for (let i = 0; i < array.length; i++) {
-// //     result[i] = f(array[i].toUpperCase());
-// //   }
-// //   return result;
-// // };
+const x = (type: "balletFlat" | "boot" | "sneaker") => {
+  switch (type) {
+    case "balletFlat":
+      return new BalletFlat();
+    case "boot":
+      return new Boot();
+    case "sneaker":
+      return new Sneaker();
+  }
+};
 
-// // console.log(map([1, 2, 3], (x: any) => x * 2));
+// const sx = x("balletFlat");
+// ^ Argument of type 'string' is not assignable to parameter of type 'never'.ts(2345)
 
-// // type Filter = {
-// //   <T>(array: T[], f: (item: T) => boolean): T[];
-// // };
+// 関数の型同士をまーじしても、(まーじされた引数) => まーじされた返り値 にはならない。
 
-// // const f: Filter = (a, f) => {
-// //   const result = [];
-// //   for (const item of a) {
-// //     if (f(item)) {
-// //       result.push(item);
-// //     }
-// //   }
-// //   return result;
-// // };
+// ------------ good ------------
 
-// // const a: number = null;
+// 一方で、objectのfieldのmethod同士をまーじすると、(まーじされた引数) => まーじされた返り値 を実装すれば良い。
+// 呼び出し側では、methodのどれに当たるかを見て、型推論が働く。
 
-// // let promise = new Promise<number>((resolve) => resolve(45));
-// // promise.then(
-// //   (
-// //     result // Inferred as {}
-// //   ) => result * 4 // Error TS2362: The left-hand side of an arithmetic operation must )
-// // );
-// type TreeNode = { value: string };
-// type LeafNode = TreeNode & {
-//   isLeaf: true;
-// };
-// type InnerNode = TreeNode & {
-//   children: [TreeNode] | [TreeNode, TreeNode];
-// };
+// なお、下の実験の通り、呼び出し側は、unionではなく、それぞれのmethod型のどれかにマッチする必要がある。
 
-// type MapNode = <NT extends TreeNode>(n: NT, f: (v: string) => string) => NT;
+// NOTE: this is an object type.
+interface ShoeCreator {
+  create(type: "balletFlat"): BalletFlat
+  create(type: "boot"): Boot
+  create(type: "sneaker"): Sneaker
+}
 
-// const mapNode: MapNode = (n, f) => {
-//   return {
-//     ...n,
-//     value: f(n.value),
-//   };
-// };
+const shoe: ShoeCreator = {
+  create: (type: 'balletFlat' | 'boot' | 'sneaker') => {
+    switch (type) {
+      case "balletFlat":
+        return new BalletFlat();
+      case "boot":
+        return new Boot();
+      case "sneaker":
+        return new Sneaker();
+    }
+  }
+}
 
-// let a: TreeNode = { value: "a" };
-// let b: LeafNode = { value: "b", isLeaf: true };
-// let c: InnerNode = { value: "c", children: [b] };
+const result = shoe.create("boot")
 
-// a = mapNode<TreeNode>(a, (_) => _.toUpperCase()); //TreeNode
-// b = mapNode<LeafNode>(b, (_) => _.toUpperCase()); // LeafNode
-// c = mapNode<InnerNode>(c, (_) => _.toUpperCase()); // InnerNode
+// ------------------- 実験 -----------------------
+const f = (number: 1 | 2) {
+  switch (number) {
+    case 1: return "boot"
+    case 2: return "sneaker"
+  }
+}
 
-// console.log(a);
+const t = f(1)
+// const s = shoe.create(t)
 
-// // type MapNode = (n: TreeNode, f: (v: string) => string) => TreeNode;
+// ^
+// No overload matches this call.
+//   Overload 1 of 3, '(type: "balletFlat"): BalletFlat', gave the following error.
+//     Argument of type '"boot" | "sneaker"' is not assignable to parameter of type '"balletFlat"'.
+//       Type '"boot"' is not assignable to type '"balletFlat"'.
+//   Overload 2 of 3, '(type: "boot"): Boot', gave the following error.
+//     Argument of type '"boot" | "sneaker"' is not assignable to parameter of type '"boot"'.
+//       Type '"sneaker"' is not assignable to type '"boot"'.
+//   Overload 3 of 3, '(type: "sneaker"): Sneaker', gave the following error.
+//     Argument of type '"boot" | "sneaker"' is not assignable to parameter of type '"sneaker"'.
+//       Type '"boot"' is not assignable to type '"sneaker"'.ts(2769)
 
-// // const mapNode: MapNode = (n, f) => {
-// //   return {
-// //     ...n,
-// //     value: f(n.value),
-// //   };
-// // };
+// -----------------------------------------------------------
 
-// // let a: TreeNode = { value: "a" };
-// // let b: LeafNode = { value: "b", isLeaf: true };
-// // let c: InnerNode = { value: "c", children: [b] };
 
-// // a = mapNode(a, (_) => _.toUpperCase()); //TreeNode
-// // b = mapNode(b, (_) => _.toUpperCase()); // LeafNode
-// // c = mapNode(c, (_) => _.toUpperCase()); // InnerNode
 
-// // console.log(a1);
 
-// // function fill(length: number, value: string): string[] {
-// //   return Array.from({ length }, () => value);
-// // }
 
-// // function call<T extends unknown[], R>(f: (...args: T) => R, ...args: T): R {
-// //   return f(...args);
-// // }
-
-// // let aa = call(fill, 10, "a");
-
-// // ---------Chapter 4 exercises-----------------
-
-// // (3)
-// type Reservation = void;
-// // {
-// //   from: Date;
-// //   to?: Date;
-// //   destination: string;
-// // };
-
-// type Reserve = {
-//   (from: Date, to: Date, destination: string): Reservation; // Book a round trip
-//   (from: Date, destination: string): Reservation; // Book a one-way trip
-//   (destination: string): Reservation; // Book a trip with no date
-// };
-
-// let reserve: Reserve = (
-//   fromOrDestination: Date | string,
-//   toOrDestination?: Date | string,
-//   destination?: string
-// ) => {
-//   if (
-//     typeof fromOrDestination === "string" &&
-//     toOrDestination === undefined &&
-//     destination === undefined
-//   ) {
-//     // Book a trip with no date
-//     return;
-//   }
-
-//   if (
-//     fromOrDestination instanceof Date &&
-//     typeof toOrDestination === "string" &&
-//     destination !== undefined
-//   ) {
-//     // Book a one-way trip
-//     return;
-//   }
-
-//   if (
-//     fromOrDestination instanceof Date &&
-//     toOrDestination instanceof Date &&
-//     typeof destination === "string"
-//   ) {
-//     // Book a round trip
-//     return;
-//   }
-//   throw Error;
-// };
-
-// // (4)
-
-// // function call<S, T extends unknown[], R>(
-// //   f: (arg1: S, arg2: string, ...rest: T) => R,
-// //   arg1: S,
-// //   arg2: string,
-// //   ...args: T
-// // ): R {
-// //   return f(arg1, arg2, ...args);
-// // }
-
-// function call<T extends [unknown, string, ...unknown[]], R>(
-//   f: (...args: T) => R,
-//   ...args: T
-// ): R {
-//   return f(...args);
-// }
-
-// function fill(length: number, value: string): string[] {
-//   return Array.from({ length }, () => value);
-// }
-
-// function fill2(length: number, value: number): number[] {
-//   return Array.from({ length }, () => value);
-// }
-
-// call(fill, 10, "a");
-// // call(fill2, 22, 222);　// compile error
-
-// // (5). Implement a small typesafe assertion library, is. Start by sketching out
-// // your types. When you’re done, I should be able to use it like this:
-
-// function is<T>(arg1: T, ...args: [T, ...T[]]): boolean {
-//   if (!typeof Array) {
-//     return args.every((arg) => arg === arg1);
-//   }
-//   return args.every((arg) => arg === arg1);
-// }
-// // function is<T>(arg1: T, ...args: [T, ...T[]]): boolean {
-// //   return args.every((arg) => arg === arg1);
-// // }
-
-// // Compare a string and a string
-// console.log(is("string", "string")); // should complain
-// // Compare a boolean and a boolean
-// console.log(is(true, false)); // false
-// // Compare a number and a number
-
-// // console.log(is(42)); // compile error
-// console.log(is(42, 42)); // true
-// console.log(is(42, 42, 42)); // true
-
-// // Comparing two different types should give a compile-time error
-// // console.log(is(10, "foo")); // Error TS2345: Argument of type '"foo"' is not assignable
-// // to parameter of type 'number'.
-
-// // [Hard] I should be able to pass any number of arguments
-// console.log(is([1], [1])); // seems true, but okay is false. ref. https://github.com/bcherny/programming-typescript-answers/issues/6#issuecomment-623027916
-// console.log(is([1], [1, 2], [1, 2, 3])); // false
-// const ar: number[] = [1];
-// console.log(is(ar, ar)); // true
-
-// Chapter 5
-
-// Represents a chess game
-// class Game {
-//   private pieces = Game.makePieces();
-
-//   private static makePieces() {
-//     return [
-//       // Kings
-//       new King("White", "E", 1),
-//       new King("Black", "E", 8),
-//       // Queens
-//       new Queen("White", "D", 1),
-//       new Queen("Black", "D", 8),
-//       // Bishops
-//       new Bishop("White", "C", 1),
-//       new Bishop("White", "F", 1),
-//       new Bishop("Black", "C", 8),
-//       new Bishop("Black", "F", 8),
-//     ];
-//   }
-// }
-
-// // A set of coordinates for a piece
-// class Position {
-//   constructor(private file: File, private rank: Rank) {}
-
-//   distanceFrom(position: Position) {
-//     return {
-//       rank: Math.abs(position.rank - this.rank),
-//       file: Math.abs(position.file.charCodeAt(0) - this.file.charCodeAt(0)),
-//     };
-//   }
-// }
-
-// // A chess piece
-// abstract class Piece {
-//   protected position: Position;
-//   constructor(private readonly color: Color, file: File, rank: Rank) {
-//     this.position = new Position(file, rank);
-//   }
-
-//   moveTo(position: Position) {
-//     this.position = position;
-//   }
-
-//   abstract canMoveTo(position: Position): boolean;
-// }
-
-// // There are six types of pieces:
-// class King extends Piece {
-//   canMoveTo(position: Position) {
-//     let distance = this.position.distanceFrom(position);
-//     return distance.rank < 2 && distance.file < 2;
-//   }
-// }
-
-// class Queen extends Piece {}
-// class Bishop extends Piece {}
-// class Knight extends Piece {}
-// class Rook extends Piece {}
-// class Pawn extends Piece {}
-
-// type Color = "Black" | "White";
-// type File = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H";
-// type Rank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-
-// const p = new Piece("Black", "A", 1);
-
-// class Zebra {
-//   trot() {
-//     // ...
-//   }
-// }
-// class Poodle {
-//   trot() {
-//     // ...
-//   }
-// }
-// function ambleAround(animal: Zebra) {
-//   animal.trot();
-// }
-// let zebra = new Zebra();
-// let poodle = new Poodle();
-// ambleAround(zebra); // OK
-// ambleAround(poodle); // OK
-
-// Mixins
+// Chapter 7.
 
 // Option type
 interface Option<T> {
@@ -459,4 +251,17 @@ const friendNames2 = api
   })
   .getOrElse(["Fetching List Failed"]);
 
-console.log(friendNames2);
+// console.log(friendNames2);
+
+
+// Chapter9. Asynchronous programming
+
+
+type Executor = (
+  resolve: Function,
+  reject: Function,
+) => void
+
+class MyPromise {
+  constructor(f: Executor) { }  
+}
