@@ -11,6 +11,6 @@
 |8 | Asynchronous Programming, Concurrency, and Parallelism | `2023/11/22` | ``|
 |9 | Frontend and Backend Frameworks | `2023/11/22` | N/A |
 |10 | Namespaces.Modules | `2023/11/23` |`23/11/26`|
-|11 | Interoperating with JavaScript | `` |N/A|
-|12 | Building and Running TypeScript | `` |N/A|
+|11 | Interoperating with JavaScript | `23/11/26` |N/A|
+|12 | Building and Running TypeScript | `23/11/29` |N/A|
 |13 | Conclusion | `` |N/A|
