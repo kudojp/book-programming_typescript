@@ -134,11 +134,3 @@ const friendNames2 = api
   .getOrElse(["Fetching List Failed"]);
 
 // console.log(friendNames2);
-
-// Chapter9. Asynchronous programming
-
-type Executor = (resolve: Function, reject: Function) => void;
-
-class MyPromise {
-  constructor(f: Executor) {}
-}
