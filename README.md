@@ -8,9 +8,9 @@
 |5 | Classes and Interfaces | `2023/11/15` |`2023/11/15`|
 |6 | Advanced Types | `2023/11/25` |`2023/11/26` |
 |7 | Handling Errors | `2023/11/18` |`2023/11/18`|
-|8 | Asynchronous Programming, Concurrency, and Parallelism | `2023/11/22` | ``|
+|8 | Asynchronous Programming, Concurrency, and Parallelism | `2023/11/22` | `23/12/03`|
 |9 | Frontend and Backend Frameworks | `2023/11/22` | N/A |
 |10 | Namespaces.Modules | `2023/11/23` |`23/11/26`|
 |11 | Interoperating with JavaScript | `2023/11/26` |N/A|
 |12 | Building and Running TypeScript | `2023/11/29` |N/A|
-|13 | Conclusion | `` |N/A|
+|13 | Conclusion | `2023/11/29` |N/A|
